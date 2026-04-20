@@ -7,7 +7,7 @@
             "price": "800€/mois",
             "category": "location",
             "type": "appartements",
-            "image": "images/appart1.jpg"
+            "image": "https://via.placeholder.com/400x250?text=Appartement+T2"
         },
         {
             "id": 2,
@@ -16,7 +16,7 @@
             "price": "150 000€",
             "category": "vente",
             "type": "maisons",
-            "image": "images/appart2.jpg"
+            "image": "https://via.placeholder.com/400x250?text=Maison+Familiale"
         },
         {
             "id": 3,
@@ -25,7 +25,7 @@
             "price": "500 000€",
             "category": "vente",
             "type": "villa",
-            "image": "images/appart3.jpg"
+            "image": "https://via.placeholder.com/400x250?text=Villa+Luxe"
         }
     ],
     "motos": [
@@ -36,7 +36,7 @@
             "price": "8 000€",
             "category": "vente",
             "type": "sportive",
-            "image": "images/moto1.jpg"
+            "image": "https://via.placeholder.com/400x250?text=Honda+CBR+600"
         }
     ],
     "vehicules": [
@@ -47,7 +47,7 @@
             "price": "12 000€",
             "category": "vente",
             "type": "compact",
-            "image": "images/voiture1.jpg"
+            "image": "https://via.placeholder.com/400x250?text=Peugeot+208"
         },
         {
             "id": 5,
@@ -56,7 +56,7 @@
             "price": "10 000€",
             "category": "vente",
             "type": "compact",
-            "image": "images/voiture2.jpg"
+            "image": "https://via.placeholder.com/400x250?text=Renault+Clio"
         },
         {
             "id": 6,
@@ -65,7 +65,7 @@
             "price": "35 000€",
             "category": "vente",
             "type": "SUV",
-            "image": "images/voiture3.jpg"
+            "image": "https://via.placeholder.com/400x250?text=BMW+X3"
         },
         {
             "id": 7,
@@ -74,7 +74,7 @@
             "price": "15 000€",
             "category": "location",
             "type": "compact",
-            "image": "images/voiture4.jpg"
+            "image": "https://via.placeholder.com/400x250?text=VW+Golf"
         },
         {
             "id": 8,
@@ -83,7 +83,7 @@
             "price": "25 000€",
             "category": "vente",
             "type": "tout terrain",
-            "image": "images/voiture5.jpg"
+            "image": "https://via.placeholder.com/400x250?text=Jeep+Wrangler"
         },
         {
             "id": 9,
@@ -92,7 +92,7 @@
             "price": "300 000€",
             "category": "vente",
             "type": "supercar",
-            "image": "images/voiture6.jpg"
+            "image": "https://via.placeholder.com/400x250?text=Ferrari+488"
         },
         {
             "id": 10,
@@ -101,7 +101,7 @@
             "price": "40 000€",
             "category": "location",
             "type": "camions",
-            "image": "images/voiture7.jpg"
+            "image": "https://via.placeholder.com/400x250?text=Mercedes+Sprinter"
         }
     ]
 }

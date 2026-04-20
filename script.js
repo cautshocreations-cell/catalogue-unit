@@ -159,7 +159,7 @@ function displayProducts(sectionId, products) {
             productDiv.dataset.type = product.type;
         }
         productDiv.innerHTML = `
-            <img src="${product.image}" alt="${product.name}">
+            <img src="${product.image}" alt="${product.name}" onerror="this.src='unit.png'">
             <h3>${product.name}</h3>
             <p>${product.description}</p>
             <p>Prix: ${product.price}</p>

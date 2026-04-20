@@ -247,44 +247,129 @@ h2 {
 }
 
 @media (max-width: 768px) {
+  header {
+    height: auto;
+    min-height: 320px;
+    padding: 1.5rem 1rem 1rem;
+  }
+
+  .admin-btn {
+    top: 0.75rem;
+    right: 0.75rem;
+    padding: 0.65rem 1rem;
+    font-size: 0.9rem;
+  }
+
   .products {
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   }
 
   main {
-    padding: 0 5px;
+    padding: 0 8px;
   }
 
   section {
     padding: 20px;
   }
 
-  header h1 {
-    font-size: 2rem;
+  .menu {
+    gap: 0.5rem;
+  }
+
+  .menu li {
+    flex: 1 1 120px;
+    min-width: 100px;
   }
 
   .menu a {
-    padding: 12px 8px;
+    padding: 10px 8px;
   }
 
-  .categories {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .category-btn {
-    width: 100%;
-    max-width: 200px;
-  }
-
-  .category-btn:not(:last-child)::after {
+  .menu a:not(:last-child)::after {
     display: none;
+  }
+
+  .categories,
+  .types {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.6rem;
+  }
+
+  .category-btn,
+  .type-btn {
+    width: 100%;
+    max-width: none;
+  }
+
+  .product {
+    padding: 18px;
+  }
+
+  .product img {
+    max-height: 180px;
+  }
+
+  .product h3 {
+    font-size: 1.15rem;
   }
 }
 
 @media (max-width: 480px) {
+  header {
+    height: auto;
+    padding: 1.25rem 0.75rem 0.75rem;
+  }
+
+  .menu {
+    flex-direction: column;
+  }
+
+  .menu li {
+    min-width: auto;
+    width: 100%;
+  }
+
   .products {
     grid-template-columns: 1fr;
+  }
+
+  section {
+    padding: 16px;
+    margin-bottom: 2rem;
+  }
+
+  .product {
+    padding: 16px;
+  }
+
+  .product img {
+    max-height: 160px;
+  }
+
+  .product h3 {
+    font-size: 1.1rem;
+  }
+
+  .product p {
+    font-size: 0.95rem;
+  }
+
+  .admin-btn {
+    position: static;
+    margin: 0 auto 1rem;
+    display: block;
+    width: fit-content;
+  }
+
+  footer {
+    position: static;
+    bottom: auto;
+    right: auto;
+  }
+
+  .fnh-logo {
+    width: 80px;
   }
 }
 

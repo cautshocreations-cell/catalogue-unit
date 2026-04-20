@@ -96,25 +96,68 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function loadProductsData() {
-    const stored = localStorage.getItem('productsData');
-    if (stored) {
-        productsData = JSON.parse(stored);
-    } else {
-        // Load from JSON file
-        fetch('products.json')
-            .then(response => response.json())
-            .then(data => {
-                productsData = data;
-                saveProductsData();
-            })
-            .catch(error => {
-                productsData = { appartements: [], motos: [], vehicules: [] };
-            });
-    }
+    return new Promise((resolve) => {
+        if (isFirebaseReady()) {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(FIREBASE_CONFIG);
+            }
+            const db = firebase.firestore();
+            db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC).get()
+                .then(doc => {
+                    if (doc.exists) {
+                        productsData = normalizeProductsData(doc.data());
+                    } else {
+                        productsData = { appartements: [], motos: [], vehicules: [] };
+                    }
+                    resolve();
+                })
+                .catch(() => {
+                    const stored = localStorage.getItem(STORAGE_KEY);
+                    if (stored) {
+                        productsData = normalizeProductsData(JSON.parse(stored));
+                    } else {
+                        productsData = { appartements: [], motos: [], vehicules: [] };
+                    }
+                    resolve();
+                });
+        } else {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                productsData = normalizeProductsData(JSON.parse(stored));
+            } else {
+                fetch('products.json')
+                    .then(response => response.json())
+                    .then(data => {
+                        productsData = normalizeProductsData(data);
+                        saveProductsData();
+                        resolve();
+                    })
+                    .catch(() => {
+                        productsData = { appartements: [], motos: [], vehicules: [] };
+                        resolve();
+                    });
+            }
+        }
+    });
 }
 
 function saveProductsData() {
-    localStorage.setItem('productsData', JSON.stringify(productsData));
+    if (isFirebaseReady()) {
+        if (!firebase.apps.length) {
+            firebase.initializeApp(FIREBASE_CONFIG);
+        }
+        const db = firebase.firestore();
+        db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC).set(normalizeProductsData(productsData));
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizeProductsData(productsData)));
+}
+
+function normalizeProductsData(data) {
+    return {
+        appartements: Array.isArray(data?.appartements) ? data.appartements : [],
+        motos: Array.isArray(data?.motos) ? data.motos : [],
+        vehicules: Array.isArray(data?.vehicules) ? data.vehicules : []
+    };
 }
 
 function updateTypeSelect() {

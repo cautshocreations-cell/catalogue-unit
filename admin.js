@@ -7,10 +7,11 @@ function isFirebaseReady() {
 }
 
 function getFirestore() {
-    if (!isFirebaseReady()) return null;
-    if (!firebase.apps.length) {
-        firebase.initializeApp(FIREBASE_CONFIG);
+    if (!isFirebaseReady()) {
+        console.error('Firebase non prêt : vérifier firebase-config.js et l’ordre des scripts.');
+        return null;
     }
+    initializeFirebaseApp();
     return firebase.firestore();
 }
 
@@ -54,15 +55,19 @@ async function loadProductsData() {
 }
 
 async function saveProductsData() {
-    if (isFirebaseReady()) {
-        try {
-            const db = getFirestore();
-            await db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC).set(normalizeProductsData(productsData));
-        } catch (error) {
-            console.error('Erreur enregistrement Firebase :', error);
-        }
-    } else {
-        console.warn('Firebase non configuré : les modifications ne seront pas partagées entre utilisateurs.');
+    const db = getFirestore();
+    if (!db) {
+        console.warn('Firestore non initialisé : impossible de sauvegarder.');
+        return false;
+    }
+
+    try {
+        await db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC).set(normalizeProductsData(productsData));
+        console.log('Données sauvegardées dans Firestore.');
+        return true;
+    } catch (error) {
+        console.error('Erreur enregistrement Firebase :', error);
+        return false;
     }
 }
 
@@ -131,10 +136,14 @@ document.addEventListener('DOMContentLoaded', async function() {
             productsData[section].push(product);
         }
 
-        await saveProductsData();
+        const success = await saveProductsData();
         displayProducts();
         modal.style.display = 'none';
-        alert('Produit sauvegardé !');
+        if (success) {
+            alert('Produit sauvegardé !');
+        } else {
+            alert('Erreur : les données n’ont pas pu être enregistrées. Vérifiez la console.');
+        }
     });
 
     exportBtn?.addEventListener('click', function() {
@@ -166,9 +175,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     clearBtn?.addEventListener('click', async function() {
         if (!confirm('Êtes-vous sûr de vouloir supprimer TOUTES les données ?')) return;
         productsData = { appartements: [], motos: [], vehicules: [] };
-        await saveProductsData();
+        const success = await saveProductsData();
         displayProducts();
-        alert('Toutes les données ont été supprimées !');
+        if (success) {
+            alert('Toutes les données ont été supprimées !');
+        } else {
+            alert('Erreur : suppression non enregistrée. Vérifiez la console.');
+        }
     });
 });
 
@@ -245,10 +258,13 @@ function editProduct(id) {
     document.getElementById('modal').style.display = 'block';
 }
 
-function deleteProduct(id) {
+async function deleteProduct(id) {
     if (!confirm('Êtes-vous sûr ?')) return;
     const section = document.getElementById('sectionSelect')?.value || 'appartements';
     productsData[section] = (productsData[section] || []).filter(p => p.id !== id);
-    saveProductsData();
+    const success = await saveProductsData();
     displayProducts();
+    if (!success) {
+        alert('Erreur : suppression non enregistrée. Vérifiez la console.');
+    }
 }

@@ -6,10 +6,11 @@ function isFirebaseReady() {
 }
 
 function getFirestore() {
-    if (!isFirebaseReady()) return null;
-    if (!firebase.apps.length) {
-        firebase.initializeApp(FIREBASE_CONFIG);
+    if (!isFirebaseReady()) {
+        console.error('Firebase non prêt sur la page publique : vérifier firebase-config.js et l’ordre des scripts.');
+        return null;
     }
+    initializeFirebaseApp();
     return firebase.firestore();
 }
 

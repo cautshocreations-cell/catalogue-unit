@@ -13,3 +13,14 @@ const FIREBASE_ENABLED = FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== 'Y
 function isFirebaseConfigured() {
     return FIREBASE_ENABLED && typeof firebase !== 'undefined';
 }
+
+function initializeFirebaseApp() {
+    if (!isFirebaseConfigured()) {
+        console.error('Firebase configuration missing or SDK non chargé.');
+        return null;
+    }
+    if (!firebase.apps.length) {
+        firebase.initializeApp(FIREBASE_CONFIG);
+    }
+    return firebase;
+}

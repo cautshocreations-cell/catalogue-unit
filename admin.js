@@ -1,5 +1,18 @@
-const STORAGE_KEY = 'unitProductsData';
+const FIRESTORE_COLLECTION = 'catalogue';
+const FIRESTORE_DOC = 'catalogue-data';
 let productsData = { appartements: [], motos: [], vehicules: [] };
+
+function isFirebaseReady() {
+    return isFirebaseConfigured();
+}
+
+function getFirestore() {
+    if (!isFirebaseReady()) return null;
+    if (!firebase.apps.length) {
+        firebase.initializeApp(FIREBASE_CONFIG);
+    }
+    return firebase.firestore();
+}
 
 function normalizeProductsData(data) {
     return {
@@ -9,34 +22,51 @@ function normalizeProductsData(data) {
     };
 }
 
+async function loadDefaults() {
+    try {
+        const response = await fetch('products.json');
+        const data = await response.json();
+        return normalizeProductsData(data);
+    } catch (error) {
+        console.error('Erreur lors du chargement de products.json :', error);
+        return { appartements: [], motos: [], vehicules: [] };
+    }
+}
+
 async function loadProductsData() {
-    console.log('Loading data...');
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-        productsData = normalizeProductsData(JSON.parse(stored));
-        console.log('Loaded from localStorage:', productsData);
-    } else {
+    if (isFirebaseReady()) {
         try {
-            const response = await fetch('products.json');
-            const data = await response.json();
-            productsData = normalizeProductsData(data);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(productsData));
-            console.log('Loaded from products.json:', productsData);
-        } catch (e) {
-            console.error('Failed to load:', e);
-            productsData = { appartements: [], motos: [], vehicules: [] };
+            const db = getFirestore();
+            const doc = await db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC).get();
+            if (doc.exists) {
+                productsData = normalizeProductsData(doc.data());
+                return;
+            }
+            productsData = await loadDefaults();
+            await saveProductsData();
+        } catch (error) {
+            console.error('Erreur Firebase :', error);
+            productsData = await loadDefaults();
         }
+    } else {
+        productsData = await loadDefaults();
     }
 }
 
 async function saveProductsData() {
-    const normalized = normalizeProductsData(productsData);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
-    console.log('Saved to localStorage:', normalized);
+    if (isFirebaseReady()) {
+        try {
+            const db = getFirestore();
+            await db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC).set(normalizeProductsData(productsData));
+        } catch (error) {
+            console.error('Erreur enregistrement Firebase :', error);
+        }
+    } else {
+        console.warn('Firebase non configuré : les modifications ne seront pas partagées entre utilisateurs.');
+    }
 }
 
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('DOM Content Loaded');
     await loadProductsData();
     displayProducts();
     updateTypeSelect();
@@ -51,10 +81,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const importFile = document.getElementById('importFile');
     const clearBtn = document.getElementById('clearBtn');
 
-    console.log('All elements loaded successfully');
-
     addProductBtn?.addEventListener('click', function() {
-        console.log('Add button clicked');
         document.getElementById('modalTitle').textContent = 'Ajouter Produit';
         document.getElementById('productId').value = '';
         form.reset();
@@ -81,7 +108,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         e.preventDefault();
         const section = sectionSelect.value;
         const id = document.getElementById('productId').value;
-        
         const product = {
             id: id ? parseInt(id, 10) : Date.now(),
             name: document.getElementById('name').value,
@@ -100,11 +126,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             const idx = productsData[section].findIndex(p => p.id === parseInt(id, 10));
             if (idx !== -1) {
                 productsData[section][idx] = product;
-                console.log('Updated product');
             }
         } else {
             productsData[section].push(product);
-            console.log('Added new product');
         }
 
         await saveProductsData();
@@ -140,7 +164,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
 
     clearBtn?.addEventListener('click', async function() {
-        console.log('Clear button clicked');
         if (!confirm('Êtes-vous sûr de vouloir supprimer TOUTES les données ?')) return;
         productsData = { appartements: [], motos: [], vehicules: [] };
         await saveProductsData();
@@ -153,10 +176,10 @@ function updateTypeSelect() {
     const section = document.getElementById('sectionSelect')?.value || 'appartements';
     const typeSelect = document.getElementById('type');
     if (!typeSelect) return;
-    
+
     typeSelect.innerHTML = '';
     let types = [];
-    
+
     if (section === 'appartements') {
         types = ['appartements', 'maisons', 'villa'];
     } else if (section === 'motos') {
@@ -164,7 +187,7 @@ function updateTypeSelect() {
     } else if (section === 'vehicules') {
         types = ['compact', 'SUV', 'tout terrain', 'sport', 'supercar', 'camions'];
     }
-    
+
     types.forEach(type => {
         const option = document.createElement('option');
         option.value = type;
@@ -177,15 +200,14 @@ function displayProducts() {
     const section = document.getElementById('sectionSelect')?.value || 'appartements';
     const container = document.getElementById('productsList');
     if (!container) return;
-    
+
     container.innerHTML = '';
-    
     const products = productsData[section] || [];
     if (products.length === 0) {
         container.innerHTML = '<p style="text-align: center; color: #999;">Aucun produit</p>';
         return;
     }
-    
+
     products.forEach(product => {
         const div = document.createElement('div');
         div.className = 'product-item';
@@ -208,7 +230,7 @@ function editProduct(id) {
     const section = document.getElementById('sectionSelect')?.value || 'appartements';
     const product = (productsData[section] || []).find(p => p.id === id);
     if (!product) return;
-    
+
     document.getElementById('modalTitle').textContent = 'Modifier Produit';
     document.getElementById('productId').value = product.id;
     document.getElementById('name').value = product.name;

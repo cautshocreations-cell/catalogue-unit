@@ -1,17 +1,8 @@
-const STORAGE_KEY = 'unitProductsData';
 const FIRESTORE_COLLECTION = 'catalogue';
 const FIRESTORE_DOC = 'catalogue-data';
 
 function isFirebaseReady() {
     return isFirebaseConfigured();
-}
-
-function normalizeProductsData(data) {
-    return {
-        appartements: Array.isArray(data?.appartements) ? data.appartements : [],
-        motos: Array.isArray(data?.motos) ? data.motos : [],
-        vehicules: Array.isArray(data?.vehicules) ? data.vehicules : []
-    };
 }
 
 function getFirestore() {
@@ -20,6 +11,27 @@ function getFirestore() {
         firebase.initializeApp(FIREBASE_CONFIG);
     }
     return firebase.firestore();
+}
+
+function getValidImageUrl(image) {
+    if (!image || typeof image !== 'string') return 'unit.png';
+    if (image.startsWith('images/') || image.startsWith('./images/') || image.startsWith('../images/')) {
+        return 'unit.png';
+    }
+    return image;
+}
+
+function normalizeProductsData(data) {
+    const normalizeProduct = product => ({
+        ...product,
+        image: getValidImageUrl(product.image)
+    });
+
+    return {
+        appartements: Array.isArray(data?.appartements) ? data.appartements.map(normalizeProduct) : [],
+        motos: Array.isArray(data?.motos) ? data.motos.map(normalizeProduct) : [],
+        vehicules: Array.isArray(data?.vehicules) ? data.vehicules.map(normalizeProduct) : []
+    };
 }
 
 async function getFirestoreProducts() {
@@ -46,23 +58,16 @@ function watchFirestoreProducts(callback) {
         });
 }
 
-function getStoredProductsData() {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? normalizeProductsData(JSON.parse(stored)) : null;
-}
-
-function setStoredProductsData(data) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizeProductsData(data)));
-}
-
-window.addEventListener('storage', function(event) {
-    if (event.key === STORAGE_KEY) {
-        const data = getStoredProductsData();
-        if (data) {
-            loadPageProducts(data);
-        }
+async function fetchProductsJson() {
+    try {
+        const response = await fetch('products.json');
+        const data = await response.json();
+        return normalizeProductsData(data);
+    } catch (error) {
+        console.error('Erreur lors du chargement de products.json:', error);
+        return { appartements: [], motos: [], vehicules: [] };
     }
-});
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     initializeAndLoadProducts();
@@ -102,31 +107,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function initializeAndLoadProducts() {
     let data = null;
+
     if (isFirebaseReady()) {
         data = await getFirestoreProducts();
-        if (data) {
-            setStoredProductsData(data);
-            watchFirestoreProducts(latestData => loadPageProducts(latestData));
-        }
-    }
-
-    if (!data) {
-        data = getStoredProductsData();
-    }
-
-    if (!data) {
-        data = await fetch('products.json')
-            .then(response => response.json())
-            .catch(error => {
-                console.error('Erreur lors du chargement des produits:', error);
-                return { appartements: [], motos: [], vehicules: [] };
-            });
-
-        setStoredProductsData(data);
-        if (isFirebaseReady()) {
+        if (!data) {
+            data = await fetchProductsJson();
             await saveFirestoreProducts(data);
-            watchFirestoreProducts(latestData => loadPageProducts(latestData));
+        } else {
+            watchFirestoreProducts(loadPageProducts);
         }
+    } else {
+        data = await fetchProductsJson();
     }
 
     loadPageProducts(data);

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catalogue Unit</title>
+    <link rel="icon" href="unit.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        :root {
+          --background: #fff8d6;
+          --surface: rgba(255, 255, 255, 0.92);
+          --surface-strong: rgba(255, 250, 234, 0.98);
+          --accent: #f7d468;
+          --accent-strong: #f5c439;
+          --text: #3f3a1a;
+          --muted: #6e6444;
+          --shadow: 0 24px 60px rgba(0, 0, 0, 0.08);
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(180deg, #fffce4 0%, #fff8d6 65%, #fff2c3 100%);
+            margin: 0;
+            padding: 0;
+            color: var(--text);
+        }
+        header {
+            position: relative;
+            overflow: hidden;
+            background-image: url('unit_rp_banniere_2.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 400px;
+            width: 100%;
+            padding: 2rem 1rem 1rem 1rem;
+            text-align: center;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(to top, rgba(255, 255, 255, 0.95), transparent);
+            pointer-events: none;
+        }
+        header .back-btn {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: var(--accent);
+            color: var(--text);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-radius: 999px;
+            font-weight: 700;
+            transition: background 0.25s ease, transform 0.25s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        header .back-btn:hover {
+            background: var(--accent-strong);
+            transform: translateY(-2px);
+        }
+        header button:hover {
+            background: var(--accent-strong);
+            transform: translateY(-2px);
+        }
+        main {
+            width: min(1080px, 94vw);
+            margin: 0 auto 40px;
+            padding: 0 10px;
+        }
+        section {
+            background: var(--surface);
+            border-radius: 24px;
+            padding: 28px;
+            border: 1px solid rgba(255, 212, 90, 0.45);
+            box-shadow: var(--shadow);
+        }
+        h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            color: #4a90e2;
+            margin-bottom: 1rem;
+            text-align: center;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 0.5rem;
+        }
+        select, button {
+            padding: 0.75rem 1rem;
+            border: 1px solid rgba(242, 209, 122, 0.8);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            background: rgba(255, 255, 255, 0.92);
+        }
+        select:focus, button:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        button {
+            background: var(--accent);
+            color: var(--text);
+            cursor: pointer;
+            font-weight: 700;
+        }
+        button:hover {
+            background: var(--accent-strong);
+            transform: translateY(-2px);
+        }
+        .export-import {
+            margin: 1rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .product-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        .product-item {
+            border: 1px solid rgba(242, 209, 122, 0.8);
+            padding: 1rem;
+            border-radius: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+            background: rgba(255, 255, 255, 0.92);
+        }
+        .product-item:hover {
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+        .product-item button {
+            margin-left: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            transition: background 0.25s ease;
+        }
+        .product-item button:hover {
+            background: var(--accent-strong);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background-color: var(--surface-strong);
+            margin: 5% auto;
+            padding: 2rem;
+            border: 1px solid rgba(255, 212, 90, 0.45);
+            width: 90%;
+            max-width: 500px;
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            animation: modalFadeIn 0.3s ease;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+        .close:hover {
+            color: var(--accent);
+            transform: rotate(90deg);
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        label {
+            font-weight: 500;
+            color: var(--text);
+        }
+        input, textarea, select {
+            padding: 0.75rem;
+            border: 1px solid rgba(242, 209, 122, 0.8);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            background: rgba(255, 255, 255, 0.92);
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(247, 212, 104, 0.2);
+        }
+        button[type="submit"], button[type="button"] {
+            padding: 0.75rem 1.5rem;
+            background: var(--accent);
+            color: var(--text);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: background 0.25s ease, transform 0.25s ease;
+            margin-top: 1rem;
+        }
+        button[type="submit"]:hover, button[type="button"]:hover {
+            background: var(--accent-strong);
+            transform: translateY(-2px);
+        }
+        @media (max-width: 768px) {
+            main {
+                padding: 1rem;
+            }
+            .export-import {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .product-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .product-item div:last-child {
+                margin-top: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="banner">
+        </div>
+        <nav>
+            <ul class="menu">
+                <li><a href="index.html">Accueil</a></li>
+                <li><a href="appartements.html">Appartements</a></li>
+                <li><a href="motos.html">Motos</a></li>
+                <li><a href="vehicules.html">Véhicules</a></li>
+                <li><a href="admin.html" class="active">Admin</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section>
+            <h2>Gérer les Produits</h2>
+            <select id="sectionSelect">
+                <option value="appartements">Appartements</option>
+                <option value="motos">Motos</option>
+                <option value="vehicules">Véhicules</option>
+            </select>
+            <button id="addProductBtn">Ajouter Produit</button>
+            <div class="export-import">
+                <button id="exportBtn">Exporter JSON</button>
+                <input type="file" id="importFile" accept=".json">
+                <button id="importBtn">Importer JSON</button>
+            </div>
+            <div id="productsList"></div>
+        </section>
+    </main>
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modalTitle">Ajouter Produit</h2>
+            <form id="productForm">
+                <input type="hidden" id="productId">
+                <label for="name">Nom:</label>
+                <input type="text" id="name" required>
+                <label for="description">Description:</label>
+                <textarea id="description" required></textarea>
+                <label for="price">Prix:</label>
+                <input type="text" id="price" required>
+                <label for="category">Catégorie:</label>
+                <select id="category" required>
+                    <option value="vente">Vente</option>
+                    <option value="location">Location</option>
+                </select>
+                <label for="type">Type:</label>
+                <select id="type" required>
+                    <option value="">-- Sélectionner un type --</option>
+                </select>
+                <label for="image">Image URL:</label>
+                <input type="text" id="image" required>
+                <button type="submit">Sauvegarder</button>
+            </form>
+        </div>
+    </div>
+    <script src="admin.js"></script>
+</body>
+</html>

@@ -1,7 +1,11 @@
-let productsData = {};
+const STORAGE_KEY = 'unitProductsData';
+const FIRESTORE_COLLECTION = 'catalogue';
+const FIRESTORE_DOC = 'catalogue-data';
 
-document.addEventListener('DOMContentLoaded', function() {
-    loadProductsData();
+let productsData = { appartements: [], motos: [], vehicules: [] };
+
+document.addEventListener('DOMContentLoaded', async function() {
+    await loadProductsData();
     displayProducts();
 
     const modal = document.getElementById('modal');
@@ -36,12 +40,12 @@ document.addEventListener('DOMContentLoaded', function() {
         updateTypeSelect();
     });
 
-    form.addEventListener('submit', function(e) {
+    form.addEventListener('submit', async function(e) {
         e.preventDefault();
         const section = sectionSelect.value;
         const id = document.getElementById('productId').value;
         const product = {
-            id: id ? parseInt(id) : Date.now(),
+            id: id ? parseInt(id, 10) : Date.now(),
             name: document.getElementById('name').value,
             description: document.getElementById('description').value,
             price: document.getElementById('price').value,
@@ -50,20 +54,23 @@ document.addEventListener('DOMContentLoaded', function() {
             image: document.getElementById('image').value
         };
 
+        if (!productsData[section]) {
+            productsData[section] = [];
+        }
+
         if (id) {
-            // Edit
-            const index = productsData[section].findIndex(p => p.id == id);
+            const index = productsData[section].findIndex(p => p.id === parseInt(id, 10));
             if (index !== -1) {
                 productsData[section][index] = product;
             }
         } else {
-            // Add
             productsData[section].push(product);
         }
 
-        saveProductsData();
+        await saveProductsData();
         displayProducts();
         modal.style.display = 'none';
+        alert('Produit sauvegardé');
     });
 
     exportBtn.addEventListener('click', function() {
@@ -80,10 +87,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const file = importFile.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = async function(e) {
                 try {
-                    productsData = JSON.parse(e.target.result);
-                    saveProductsData();
+                    productsData = normalizeProductsData(JSON.parse(e.target.result));
+                    await saveProductsData();
                     displayProducts();
                     alert('Import réussi');
                 } catch (err) {
@@ -93,63 +100,75 @@ document.addEventListener('DOMContentLoaded', function() {
             reader.readAsText(file);
         }
     });
+
+    const clearBtn = document.getElementById('clearBtn');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', async function() {
+            if (confirm('Êtes-vous sûr de vouloir supprimer TOUTES les données ?')) {
+                productsData = { appartements: [], motos: [], vehicules: [] };
+                await saveProductsData();
+                displayProducts();
+                alert('Toutes les données ont été supprimées');
+            }
+        });
+    }
 });
 
-function loadProductsData() {
-    return new Promise((resolve) => {
-        if (isFirebaseReady()) {
+async function loadProductsData() {
+    if (isFirebaseReady()) {
+        try {
             if (!firebase.apps.length) {
                 firebase.initializeApp(FIREBASE_CONFIG);
             }
             const db = firebase.firestore();
-            db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC).get()
-                .then(doc => {
-                    if (doc.exists) {
-                        productsData = normalizeProductsData(doc.data());
-                    } else {
-                        productsData = { appartements: [], motos: [], vehicules: [] };
-                    }
-                    resolve();
-                })
-                .catch(() => {
-                    const stored = localStorage.getItem(STORAGE_KEY);
-                    if (stored) {
-                        productsData = normalizeProductsData(JSON.parse(stored));
-                    } else {
-                        productsData = { appartements: [], motos: [], vehicules: [] };
-                    }
-                    resolve();
-                });
-        } else {
+            const doc = await db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC).get();
+            if (doc.exists) {
+                productsData = normalizeProductsData(doc.data());
+            } else {
+                productsData = { appartements: [], motos: [], vehicules: [] };
+            }
+        } catch (error) {
+            console.error('Firebase error:', error);
             const stored = localStorage.getItem(STORAGE_KEY);
             if (stored) {
                 productsData = normalizeProductsData(JSON.parse(stored));
             } else {
-                fetch('products.json')
-                    .then(response => response.json())
-                    .then(data => {
-                        productsData = normalizeProductsData(data);
-                        saveProductsData();
-                        resolve();
-                    })
-                    .catch(() => {
-                        productsData = { appartements: [], motos: [], vehicules: [] };
-                        resolve();
-                    });
+                productsData = { appartements: [], motos: [], vehicules: [] };
             }
         }
-    });
+    } else {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+            productsData = normalizeProductsData(JSON.parse(stored));
+        } else {
+            try {
+                const response = await fetch('products.json');
+                const data = await response.json();
+                productsData = normalizeProductsData(data);
+                await saveProductsData();
+            } catch (error) {
+                console.error('Load error:', error);
+                productsData = { appartements: [], motos: [], vehicules: [] };
+            }
+        }
+    }
 }
 
-function saveProductsData() {
+async function saveProductsData() {
+    const normalized = normalizeProductsData(productsData);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+    
     if (isFirebaseReady()) {
-        if (!firebase.apps.length) {
-            firebase.initializeApp(FIREBASE_CONFIG);
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(FIREBASE_CONFIG);
+            }
+            const db = firebase.firestore();
+            await db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC).set(normalized);
+        } catch (error) {
+            console.error('Firebase save error:', error);
         }
-        const db = firebase.firestore();
-        db.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC).set(normalizeProductsData(productsData));
     }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizeProductsData(productsData)));
 }
 
 function normalizeProductsData(data) {
@@ -228,7 +247,7 @@ function editProduct(id) {
 function deleteProduct(id) {
     if (confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
         const section = document.getElementById('sectionSelect').value;
-        productsData[section] = productsData[section].filter(p => p.id != id);
+        productsData[section] = productsData[section].filter(p => p.id !== id);
         saveProductsData();
         displayProducts();
     }

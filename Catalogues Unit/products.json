@@ -1,0 +1,107 @@
+{
+    "appartements": [
+        {
+            "id": 1,
+            "name": "Appartement T2 Centre-ville",
+            "description": "Bel appartement de 50m² en plein centre-ville.",
+            "price": "800€/mois",
+            "category": "location",
+            "type": "appartements",
+            "image": "images/appart1.jpg"
+        },
+        {
+            "id": 2,
+            "name": "Maison Familiale Quartier Résidentiel",
+            "description": "Spacieux appartement de 70m² avec jardin.",
+            "price": "150 000€",
+            "category": "vente",
+            "type": "maisons",
+            "image": "images/appart2.jpg"
+        },
+        {
+            "id": 3,
+            "name": "Villa de Luxe Vue Mer",
+            "description": "Villa moderne avec piscine et jardin.",
+            "price": "500 000€",
+            "category": "vente",
+            "type": "villa",
+            "image": "images/appart3.jpg"
+        }
+    ],
+    "motos": [
+        {
+            "id": 3,
+            "name": "Honda CBR 600",
+            "description": "Moto sportive en excellent état.",
+            "price": "8 000€",
+            "category": "vente",
+            "type": "sportive",
+            "image": "images/moto1.jpg"
+        }
+    ],
+    "vehicules": [
+        {
+            "id": 4,
+            "name": "Peugeot 208",
+            "description": "Voiture compacte, faible kilométrage.",
+            "price": "12 000€",
+            "category": "vente",
+            "type": "compact",
+            "image": "images/voiture1.jpg"
+        },
+        {
+            "id": 5,
+            "name": "Renault Clio",
+            "description": "Citadine économique et fiable.",
+            "price": "10 000€",
+            "category": "vente",
+            "type": "compact",
+            "image": "images/voiture2.jpg"
+        },
+        {
+            "id": 6,
+            "name": "BMW X3",
+            "description": "SUV luxueux avec toutes options.",
+            "price": "35 000€",
+            "category": "vente",
+            "type": "SUV",
+            "image": "images/voiture3.jpg"
+        },
+        {
+            "id": 7,
+            "name": "Volkswagen Golf",
+            "description": "Berline familiale confortable.",
+            "price": "15 000€",
+            "category": "location",
+            "type": "compact",
+            "image": "images/voiture4.jpg"
+        },
+        {
+            "id": 8,
+            "name": "Jeep Wrangler",
+            "description": "Tout-terrain robuste pour aventures.",
+            "price": "25 000€",
+            "category": "vente",
+            "type": "tout terrain",
+            "image": "images/voiture5.jpg"
+        },
+        {
+            "id": 9,
+            "name": "Ferrari 488",
+            "description": "Supercar italienne, performance ultime.",
+            "price": "300 000€",
+            "category": "vente",
+            "type": "supercar",
+            "image": "images/voiture6.jpg"
+        },
+        {
+            "id": 10,
+            "name": "Mercedes Sprinter",
+            "description": "Camion utilitaire pour transport.",
+            "price": "40 000€",
+            "category": "location",
+            "type": "camions",
+            "image": "images/voiture7.jpg"
+        }
+    ]
+}
